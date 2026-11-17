@@ -1,73 +1,73 @@
-# Droidian na Samsung Galaxy J5 (2017) — `j5y17lte`
+# Droidian on Samsung Galaxy J5 (2017) — `j5y17lte`
 
-Port [Droidiana](https://droidian.org) (Debian dla telefonów, Phosh + Halium) na
-**Samsung Galaxy J5 (2017), SM-J530F** (Exynos 7870).
+A port of [Droidian](https://droidian.org) (Debian for phones, Phosh + Halium)
+to the **Samsung Galaxy J5 (2017), SM-J530F** (Exynos 7870).
 
-Repozytorium zawiera wszystko, czego potrzeba, żeby powtórzyć port od zera:
-łatki kernela z pakietowaniem Droidiana, nakładkę na rootfs z poprawkami
-specyficznymi dla urządzenia, skrypty oraz konfigurację hotspotu z Pi-hole.
+This repository contains everything needed to reproduce the port from scratch:
+kernel patches including the Droidian packaging, a rootfs overlay with the
+device-specific fixes, helper scripts, and a Wi-Fi hotspot setup with Pi-hole.
 
-> ⚠️ Projekt hobbystyczny. Flashowanie może skończyć się koniecznością
-> przywracania telefonu przez Odin/Heimdall. Przed startem zrób kopię
-> partycji `BOOT`, `RECOVERY` i **`EFS`** (IMEI!).
+> ⚠️ Hobby project. Flashing may leave you restoring the phone with
+> Odin/Heimdall. Back up the `BOOT`, `RECOVERY` and **`EFS`** (IMEI!)
+> partitions before you start.
 
 ## Status
 
-| Funkcja | Stan | Uwagi |
+| Feature | State | Notes |
 |---|---|---|
-| Start do Phosh | ✅ | ok. 60 s do ekranu blokady |
-| Ekran, dotyk (pion i poziom) | ✅ | wymaga łatki phoc (patrz niżej) |
-| Obrót ekranu | ✅ | |
-| Rozmowy głosowe | ✅ | |
-| Dane komórkowe (LTE) | ✅ | patrz „Dane komórkowe” |
-| Wi-Fi (klient) | ✅ | |
-| Hotspot Wi-Fi | ✅ | firmware SoftAP, 2.4 GHz kan. 6 |
-| Pi-hole dla hotspotu | ✅ | przełącznik w menu aplikacji |
-| SSH (USB i Wi-Fi) | ✅ | tylko klucze |
-| Wszystkie 8 rdzeni CPU | ✅ | hotplug governor wyłączony |
-| Kamera | ❌ | węzły V4L2 zablokowane — sterownik FIMC-IS powoduje kernel panic |
-| Dźwięk multimediów, SMS, Bluetooth, GPS, czujniki | ❓ | niesprawdzone (bluebinder się nie uruchamia) |
-| Przeglądarka | ⚠️ | działa, ale 2 GB RAM to mało dla Firefoksa |
+| Boot to Phosh | ✅ | about 60 s to the lock screen |
+| Display, touch (portrait and landscape) | ✅ | needs the phoc patch (see below) |
+| Screen rotation | ✅ | |
+| Voice calls | ✅ | |
+| Mobile data (LTE) | ✅ | see "Mobile data" |
+| Wi-Fi (client) | ✅ | |
+| Wi-Fi hotspot | ✅ | SoftAP firmware, 2.4 GHz channel 6 |
+| Pi-hole for the hotspot | ✅ | toggle in the app grid |
+| SSH (USB and Wi-Fi) | ✅ | key-only |
+| All 8 CPU cores | ✅ | hotplug governor disabled |
+| Camera | ❌ | V4L2 nodes blocked — the FIMC-IS driver causes a kernel panic |
+| Media audio, SMS, Bluetooth, GPS, sensors | ❓ | not tested (bluebinder does not start) |
+| Web browser | ⚠️ | works, but 2 GB of RAM is little for Firefox |
 
-## Urządzenie
+## Device
 
 | | |
 |---|---|
 | Model | SM-J530F (`j5y17lte`) |
 | SoC | Exynos 7870, 8× Cortex-A53, Mali-T830 |
-| RAM / pamięć | 2 GB / 16 GB eMMC |
-| Bootloader | Samsung S-boot, flashowanie przez Odin/Heimdall, partycje WIELKIMI literami (`BOOT`, `VENDOR`, `USERDATA`) |
-| Partycja `BOOT` | **32 MiB** |
-| Baza Androida | LineageOS 17.1 (Android 10, API 29), partycja `VENDOR` (Treble) |
-| Kernel | 3.18.140, [samsungexynos7870/android_kernel_samsung_exynos7870](https://github.com/samsungexynos7870/android_kernel_samsung_exynos7870) gałąź `simple_q_permissive` |
-| Droidian | 101 (trixie), rootfs `api29` |
+| RAM / storage | 2 GB / 16 GB eMMC |
+| Bootloader | Samsung S-boot, flashing via Odin/Heimdall, UPPER-CASE partition names (`BOOT`, `VENDOR`, `USERDATA`) |
+| `BOOT` partition | **32 MiB** |
+| Android base | LineageOS 17.1 (Android 10, API 29), `VENDOR` partition (Treble) |
+| Kernel | 3.18.140, [samsungexynos7870/android_kernel_samsung_exynos7870](https://github.com/samsungexynos7870/android_kernel_samsung_exynos7870) branch `simple_q_permissive` |
+| Droidian | 101 (trixie), `api29` rootfs |
 
-Parametry obrazu startowego (z pmaports postmarketOS, `device-samsung-j5y17lte`):
+Boot image parameters (from postmarketOS pmaports, `device-samsung-j5y17lte`):
 page size 2048, base `0x10000000`, kernel `0x8000`, ramdisk `0x01000000`,
-tags `0x100`, nagłówek v0, osobny `dt.img` w formacie Exynos `DTBH`.
+tags `0x100`, header v0, separate `dt.img` in the Exynos `DTBH` format.
 
-## Zawartość repozytorium
+## Repository layout
 
 ```
-kernel/patches/     łatki na bazę kernela (pakietowanie Droidiana + poprawki)
-sparse/             pliki nakładane na rootfs Droidiana (układ jak w pakietach adaptation)
-pihole/             zapytanie SQL dodające listę dozwolonych domen
+kernel/patches/     patches on top of the kernel base (Droidian packaging + fixes)
+sparse/             files overlaid on the Droidian rootfs (same layout as adaptation packages)
+pihole/             SQL statement adding the allowlist subscription
 scripts/
-  build-kernel.sh     klonuje kernel, nakłada łatki, buduje .deb i boot.img w Dockerze
-  install-overlay.sh  instaluje sparse/ na działającym telefonie przez SSH
-  setup-pihole.sh     instaluje Pi-hole i podpina go pod hotspot
+  build-kernel.sh     clones the kernel, applies the patches, builds .debs and boot.img in Docker
+  install-overlay.sh  installs sparse/ on a running phone over SSH
+  setup-pihole.sh     installs Pi-hole and wires it to the hotspot
 ```
 
-## Instalacja od zera
+## Installing from scratch
 
-### 0. Wymagania
+### 0. Requirements
 
-* Telefon z odblokowanym bootloaderem (OEM unlock), **TWRP** i zainstalowanym
-  LineageOS 17.1 (potrzebna jest partycja `VENDOR` z Androida 10).
-* Linux z `adb`, `docker`, `git`.
-* Ok. 6 GB wolnego miejsca na partycji danych telefonu.
+* Phone with an unlocked bootloader (OEM unlock), **TWRP** and LineageOS 17.1
+  installed (the Android 10 `VENDOR` partition is required).
+* Linux host with `adb`, `docker`, `git`.
+* About 6 GB of free space on the phone's data partition.
 
-### 1. Kopia zapasowa (w TWRP)
+### 1. Backup (in TWRP)
 
 ```sh
 mkdir backup
@@ -76,40 +76,41 @@ for p in BOOT RECOVERY EFS CPEFS PARAM; do
 done
 ```
 
-Przywrócenie Androida = wgranie z powrotem `BOOT.img`.
+Restoring Android = flashing `BOOT.img` back.
 
 ### 2. Kernel
 
 ```sh
-scripts/build-kernel.sh            # wynik: build/boot.img i build/packages/*.deb
+scripts/build-kernel.sh            # output: build/boot.img and build/packages/*.deb
 ```
 
-Kompilacja odbywa się w kontenerze `quay.io/droidian/build-essential`
-(gcc 4.9 z Androida). Skrypt sprawdza, czy `boot.img` mieści się w 32 MiB.
+The build runs in the `quay.io/droidian/build-essential` container (Android
+gcc 4.9). The script checks that `boot.img` fits into 32 MiB.
 
-### 3. Rootfs Droidiana
+### 3. Droidian rootfs
 
-Pobierz `droidian-OFFICIAL-phosh-phone-rootfs-api29-arm64-*.zip` z
+Download `droidian-OFFICIAL-phosh-phone-rootfs-api29-arm64-*.zip` from
 [droidian-images/droidian](https://github.com/droidian-images/droidian/releases).
-`adb sideload` w TWRP **nie działa** (instalator wymaga losowego dostępu do zipa,
-FUSE sideloadu go nie daje), więc instalujemy ręcznie, robiąc to samo co
-instalator:
+`adb sideload` in TWRP **does not work** (the installer needs random access to
+the zip, which the sideload FUSE does not provide), so install manually, doing
+what the installer would do:
 
 ```sh
 unzip droidian-*.zip data/rootfs.img
-adb push data/rootfs.img /data/rootfs.img          # w TWRP
+adb push data/rootfs.img /data/rootfs.img          # in TWRP
 adb shell 'e2fsck -fy /data/rootfs.img; resize2fs -f /data/rootfs.img 8G;
            ln -s /halium-system/var/lib/lxc/android/android-rootfs.img /data/android-rootfs.img'
 ```
 
-Plik `rootfs.img` jest rzadki i rośnie w miarę zapisów — **na partycji danych
-musi zostać wolne miejsce** (patrz „Znane problemy”).
+`rootfs.img` is a sparse file that grows as data is written — **the data
+partition must keep free space** (see "Known issues").
 
-### 4. Pierwszy dostęp (sieć USB)
+### 4. First access (USB network)
 
-Kernel używa starego gadżetu `android_usb` (nie configfs), a Droidian nie
-konfiguruje go sam. Zanim wgrasz kernel, zamontuj rootfs w TWRP i dograj
-usługę sieci USB oraz statycznego busyboxa (jest w zipie rootfs, `tools/busybox`):
+The kernel uses the legacy `android_usb` gadget (not configfs) and Droidian
+does not configure it on its own. Before flashing the kernel, mount the rootfs
+in TWRP and add the USB network service plus a static busybox (it is in the
+rootfs zip as `tools/busybox`):
 
 ```sh
 adb shell 'mkdir -p /r && mount -o loop /data/rootfs.img /r'
@@ -120,16 +121,16 @@ adb push sparse/etc/systemd/system/j5-usbnet.service /r/etc/systemd/system/
 adb shell 'chmod 755 /r/usr/local/bin/busybox /r/usr/local/bin/j5-usbnet.sh
   ln -s /etc/systemd/system/j5-usbnet.service /r/etc/systemd/system/sysinit.target.wants/
   mkdir -p /r/root/.ssh'
-adb push ~/.ssh/twoj_klucz.pub /r/root/.ssh/authorized_keys
+adb push ~/.ssh/your_key.pub /r/root/.ssh/authorized_keys
 adb shell 'chmod 600 /r/root/.ssh/authorized_keys; umount /r'
 ```
 
-Telefon dostanie adres `10.15.19.82`, komputer adres z DHCP `10.15.19.100–110`.
-Serwer SSH trzeba doinstalować po pierwszym starcie (`apt install openssh-server`,
-z Wi-Fi albo danych komórkowych) — do tego czasu jest tylko sieć.
-Nakładka ustawia SSH na logowanie wyłącznie kluczem.
+The phone gets `10.15.19.82`, the host gets a DHCP address from
+`10.15.19.100–110`. The SSH server has to be installed after the first boot
+(`apt install openssh-server`, over Wi-Fi or mobile data) — until then there is
+only the network link. The overlay configures SSH for key-only login.
 
-### 5. Wgranie kernela (w TWRP)
+### 5. Flashing the kernel (in TWRP)
 
 ```sh
 adb push build/boot.img /tmp/boot.img
@@ -137,124 +138,129 @@ adb shell 'dd if=/tmp/boot.img of=/dev/block/by-name/BOOT bs=1M; sync'
 adb reboot
 ```
 
-### 6. Nakładka z poprawkami
+### 6. Device overlay
 
 ```sh
-scripts/install-overlay.sh root@10.15.19.82 -i ~/.ssh/twoj_klucz
+scripts/install-overlay.sh root@10.15.19.82 -i ~/.ssh/your_key
 ```
 
-Po restarcie powinien pojawić się Phosh. PIN i hasło użytkownika `droidian`: **1234** — zmień je.
+After a reboot Phosh should come up. The lock screen PIN and the password of
+the `droidian` user (also used by `sudo`) are **1234** — change them with
+`passwd`.
 
-### 7. Hotspot + Pi-hole (opcjonalnie)
+### 7. Hotspot + Pi-hole (optional)
 
 ```sh
-scripts/setup-pihole.sh root@10.15.19.82 -i ~/.ssh/twoj_klucz
+scripts/setup-pihole.sh root@10.15.19.82 -i ~/.ssh/your_key
 ssh root@10.15.19.82 pihole setpassword
 ```
 
-## Znalezione problemy i ich rozwiązania
+## Problems found and how they were solved
 
-Kolejność odpowiada temu, jak wychodziły podczas portowania. Ta sekcja jest
-najcenniejszą częścią repozytorium — większość z tych rzeczy nie jest nigdzie
-opisana.
+Listed roughly in the order they showed up during porting. This section is the
+most valuable part of the repository — most of these are not documented
+anywhere else.
 
-### Kernel i start
+### Kernel and boot
 
-| Problem | Przyczyna | Rozwiązanie |
+| Problem | Cause | Fix |
 |---|---|---|
-| Parametry z `boot.img` w ogóle nie trafiają do kernela | **S-boot ignoruje cmdline z nagłówka boot.img** i podaje własny (m.in. `console=ram`) | cmdline Droidiana jest w `CONFIG_CMDLINE` (`droidian/j5y17lte.config`); `drivers/of/fdt.c` zmieniony tak, by `CONFIG_CMDLINE` był doklejany **po** argumentach bootloadera i miał pierwszeństwo |
-| `run-init: opening console: No such device`, brak startu systemd | `console=ram` od bootloadera | `console=tty0` + `CONFIG_VT=y` (jw.) |
-| `boot.img` 36 MB > 32 MiB partycji | `Image` ma 19 MB, initramfs Halium 17 MB | initramfs bez `udev/hwdb.d`, kompresja LZMA (`CONFIG_RD_LZMA`), sprawdzanie rozmiaru w `debian/rules` |
-| Brak `dt.img` | snippet Droidiana robi tylko `make dtbs` | `debian/rules` buduje `make dtb.img` (dtbtool_exynos) → `KERNEL_PREBUILT_DT` |
-| initramfs nie znajduje partycji `vendor` | Samsung ma nazwy WIELKIMI literami | reguła udev w initramfs i w rootfs z aliasami małymi literami (`61-samsung-lowercase-partlabels.rules`) |
-| Kontener Androida (LXC) nie startuje: `Failed to prepare new devpts instance` | kernel 3.18 | `CONFIG_DEVPTS_MULTIPLE_INSTANCES=y` |
-| systemd ≥ 256 a cgroup v1 | 3.18 nie ma cgroup2 | `systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1` |
-| Stara toolchain/host | GCC 10+ i brak ccache | łatki `dtc` (`yylloc`) i opcjonalny `ccache` w Makefile |
+| Parameters from `boot.img` never reach the kernel | **S-boot ignores the cmdline in the boot.img header** and passes its own (including `console=ram`) | the Droidian cmdline lives in `CONFIG_CMDLINE` (`droidian/j5y17lte.config`); `drivers/of/fdt.c` changed so that `CONFIG_CMDLINE` is appended **after** the bootloader arguments and takes precedence |
+| `run-init: opening console: No such device`, systemd never starts | `console=ram` from the bootloader | `console=tty0` + `CONFIG_VT=y` (as above) |
+| 36 MB `boot.img` > 32 MiB partition | `Image` is 19 MB, the Halium initramfs 17 MB | initramfs without `udev/hwdb.d`, LZMA compression (`CONFIG_RD_LZMA`), size check in `debian/rules` |
+| No `dt.img` | the Droidian snippet only runs `make dtbs` | `debian/rules` runs `make dtb.img` (dtbtool_exynos) → `KERNEL_PREBUILT_DT` |
+| initramfs cannot find the `vendor` partition | Samsung uses UPPER-CASE partition names | udev rule in the initramfs and in the rootfs adding lower-case aliases (`61-samsung-lowercase-partlabels.rules`) |
+| Android container (LXC) fails: `Failed to prepare new devpts instance` | 3.18 kernel | `CONFIG_DEVPTS_MULTIPLE_INSTANCES=y` |
+| systemd ≥ 256 vs cgroup v1 | 3.18 has no cgroup2 | `systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1` |
+| Old toolchain / host | GCC 10+ and no ccache | patches for `dtc` (`yylloc`) and optional `ccache` in the Makefile |
 
 ### Rootfs / userspace
 
-| Problem | Przyczyna | Rozwiązanie |
+| Problem | Cause | Fix |
 |---|---|---|
-| Start wisi na logo, journald zjada CPU | **pętla sprzężenia**: journald czyta kmsg → odpytuje sysfs zasilacza → sterownik `s2mu005` pisze debug do kmsg → … | `ReadKMsg=no` w `journald.conf.d/10-j5-persistent.conf`; usunięty `systemd.journald.forward_to_kmsg` |
-| phoc: `failed to get hwcomposer service` | `/dev/hwbinder`, `/dev/vndbinder` z prawami `0600` | `69-android-system.rules` (wygenerowane z `ueventd.rc` systemu) + `70-j5y17lte.rules` (z vendor) |
-| Kernel panic ~60 s po starcie sesji | **GStreamer (`gst-plugin-scanner`) i Firefox (`gfxtest`) otwierają węzły V4L2 kamery FIMC-IS** → NULL deref w sterowniku / sysmmu | łatka `fimc-is` (querycap) + `72-j5-v4l2-root-only.rules` (root-only, **bez** tagu `uaccess`, inaczej logind daje ACL sesji) + wyłączona wtyczka `libgstvideo4linux2.so` (`dpkg-divert`) |
-| Gesty nie działają, „system too slow” | czujniki Samsunga są urządzeniami input i zalewają libinput | `71-j5-ignore-sensor-inputs.rules` (`LIBINPUT_IGNORE_DEVICE`) |
-| Tylko 4 z 8 rdzeni | governor hotplug wyłącza rdzenie, a zswap nie potrafi zaalokować kompresora przy ponownym włączaniu | `j5-cpu-hotplug.service` trzyma wszystkie rdzenie online |
-| Dotyk nie obraca się z ekranem, skala z `phoc.ini` nie działa | adapter HWC2On1 numeruje panel od 1 → wyjście nazywa się **`HWCOMPOSER-2`**, a phoc Droidiana uznaje za wbudowane tylko `HWCOMPOSER-1` | `j5-patch-phoc` (zamiana napisu w binarce, ta sama długość) + hook APT po aktualizacjach; `phoc.ini` dla `HWCOMPOSER-2` (skala 2). Lepszym rozwiązaniem byłaby poprawka w [droidian/phoc](https://github.com/droidian/phoc) (`g_str_has_prefix(name, "HWCOMPOSER-")`) |
-| Brak sieci USB | `android_usb` zamiast configfs | `j5-usbnet.service` |
+| Boot hangs at the logo, journald eats the CPU | **feedback loop**: journald reads kmsg → queries the power supply in sysfs → the `s2mu005` driver writes debug output to kmsg → … | `ReadKMsg=no` in `journald.conf.d/10-j5-persistent.conf`; dropped `systemd.journald.forward_to_kmsg` |
+| phoc: `failed to get hwcomposer service` | `/dev/hwbinder`, `/dev/vndbinder` with mode `0600` | `69-android-system.rules` (generated from the system `ueventd.rc`) + `70-j5y17lte.rules` (from vendor) |
+| Kernel panic ~60 s after the session starts | **GStreamer (`gst-plugin-scanner`) and Firefox (`gfxtest`) open the FIMC-IS camera V4L2 nodes** → NULL dereference in the driver / sysmmu | `fimc-is` patch (querycap) + `72-j5-v4l2-root-only.rules` (root-only, **without** the `uaccess` tag, otherwise logind grants the session an ACL) + disabled `libgstvideo4linux2.so` plugin (`dpkg-divert`) |
+| Gestures do not work, "system too slow" | Samsung sensors are input devices and flood libinput | `71-j5-ignore-sensor-inputs.rules` (`LIBINPUT_IGNORE_DEVICE`) |
+| Only 4 of 8 cores | the hotplug governor takes cores offline, and zswap fails to allocate its compressor when bringing them back | `j5-cpu-hotplug.service` keeps all cores online |
+| Touch does not follow rotation, the scale in `phoc.ini` is ignored | the HWC2On1 adapter numbers the panel from 1 → the output is called **`HWCOMPOSER-2`**, while Droidian's phoc only treats `HWCOMPOSER-1` as built-in | `j5-patch-phoc` (same-length string replacement in the binary) + an APT hook re-applying it after upgrades; `phoc.ini` for `HWCOMPOSER-2` (scale 2). A proper fix belongs in [droidian/phoc](https://github.com/droidian/phoc) (`g_str_has_prefix(name, "HWCOMPOSER-")`) |
+| No USB network | `android_usb` instead of configfs | `j5-usbnet.service` |
 
-### Dane komórkowe
+### Mobile data
 
-Phosh przy włączaniu danych tworzy profil NetworkManagera przypięty do ICCID
-karty, a NM nie odczytuje obiektu SIM z oFono (`No SIM object available`) i
-uznaje profil za niepasujący — przełącznik stoi na „off”. Rozwiązanie:
+When mobile data is enabled, Phosh creates a NetworkManager profile pinned to
+the SIM's ICCID, but NM fails to read the SIM object from oFono
+(`No SIM object available`) and considers the profile incompatible — the
+switch stays "off". Fix:
 
 ```sh
-nmcli -t -f UUID,TYPE con show | grep gsm          # usuń duplikaty
+nmcli -t -f UUID,TYPE con show | grep gsm          # delete duplicates
 nmcli con modify <uuid> gsm.sim-id "" gsm.sim-operator-id "" connection.autoconnect yes
 nmcli con up <uuid>
 ```
 
 ### Hotspot
 
-* Sterownik `bcmdhd` z firmware „Station/P2P” odrzuca start AP
-  (`Failed to set beacon parameters`). Trzeba firmware **SoftAP**
-  (`/vendor/etc/wifi/bcmdhd_apsta.bin_blob`), który obsługuje też tryb klienta.
-  Ładuje go `j5-wifi-apsta-firmware.service` (sterownik sam dopisuje `_blob`).
-* Profil „Phosh Hotspot”: `802-11-wireless.band bg`, `channel 6`, `pmf disable`.
-* Po wyłączeniu AP sterownik zostaje „zajęty” (`SCAN-FAILED ret=-16`) i kolejne
-  włączenie się nie udaje. Dispatcher `90-j5-hotspot-recover` restartuje radio.
-  **Po wyłączeniu hotspotu odczekaj ok. 30–40 s przed ponownym włączeniem.**
+* The `bcmdhd` driver with the "Station/P2P" firmware refuses to start an AP
+  (`Failed to set beacon parameters`). The **SoftAP** firmware
+  (`/vendor/etc/wifi/bcmdhd_apsta.bin_blob`) is needed; it also handles client
+  mode. `j5-wifi-apsta-firmware.service` loads it (the driver appends `_blob`
+  by itself).
+* "Phosh Hotspot" profile: `802-11-wireless.band bg`, `channel 6`, `pmf disable`.
+* After the AP is stopped the driver stays busy (`SCAN-FAILED ret=-16`) and the
+  next start fails. The `90-j5-hotspot-recover` dispatcher script power-cycles
+  the radio. **After turning the hotspot off, wait about 30–40 s before turning
+  it on again.**
 
 ### Pi-hole
 
-* Pi-hole v6 (FTL) słucha na **127.0.0.1:5335**; dnsmasq hotspotu
-  NetworkManagera przekazuje do niego zapytania klientów
-  (`dnsmasq-shared.d/10-pihole.conf`, bez własnego cache, żeby przełącznik
-  działał natychmiast). Własny DNS telefonu **nie** jest filtrowany.
-* Panel WWW: `http://10.42.0.1:8080/admin` (z urządzenia w hotspocie).
-* Przełącznik: ikona **„Pi-hole (wł./wył.)”** w menu aplikacji albo
+* Pi-hole v6 (FTL) listens on **127.0.0.1:5335**; NetworkManager's hotspot
+  dnsmasq forwards client queries to it (`dnsmasq-shared.d/10-pihole.conf`,
+  with its own cache disabled so the toggle takes effect immediately). The
+  phone's own DNS is **not** filtered.
+* Web UI: `http://10.42.0.1:8080/admin` (from a device on the hotspot).
+* Toggle: the **"Pi-hole"** launcher in the app grid, or
   `sudo j5-pihole-toggle on|off|status|toggle`.
-* Listy blokujące (`sparse/etc/pihole/adlists.list`, ok. 435 tys. domen):
+* Blocklists (`sparse/etc/pihole/adlists.list`, about 435k domains):
   * [StevenBlack hosts](https://github.com/StevenBlack/hosts)
   * [HaGeZi Pro](https://github.com/hagezi/dns-blocklists)
-  * [KADhosts](https://github.com/FiltersHeroes/KADhosts) — polskie
-  * [CERT Polska — lista ostrzeżeń](https://hole.cert.pl/) — polskie domeny phishingowe i oszukańcze
+  * [KADhosts](https://github.com/FiltersHeroes/KADhosts) — Polish
+  * [CERT Polska warning list](https://hole.cert.pl/) — Polish phishing and scam domains
   * [Polish Filters (MajkiIT)](https://github.com/MajkiIT/polish-ads-filter)
-* Lista dozwolonych: [anudeepND/whitelist](https://github.com/anudeepND/whitelist)
-  (domeny potrzebne popularnym usługom).
-* Instalator Pi-hole wyłącza stub `systemd-resolved` na porcie 53 — tu nie jest
-  to potrzebne (port 5335), `setup-pihole.sh` przywraca stub.
+* Allowlist: [anudeepND/whitelist](https://github.com/anudeepND/whitelist)
+  (domains needed by popular services).
+* The Pi-hole installer disables the `systemd-resolved` stub on port 53 — not
+  needed here (port 5335); `setup-pihole.sh` restores the stub.
 
-## Znane problemy
+## Known issues
 
-* **Miejsce na partycji danych.** `rootfs.img` (8 GB) rośnie w miarę zapisów;
-  przy zapełnionym `/userdata` zapisy w rootfs kończą się błędem `ENOSPC`
-  (widoczne jako `I/O error -28` w `dmesg`) i grożą uszkodzeniem systemu.
-  Usuń dane starego Androida (zostaw `rootfs.img`, `android-rootfs.img`,
+* **Free space on the data partition.** `rootfs.img` (8 GB) grows as data is
+  written; when `/userdata` is full, writes inside the rootfs fail with
+  `ENOSPC` (shown as `I/O error -28` in `dmesg`) and may corrupt the system.
+  Remove the old Android data (keep `rootfs.img`, `android-rootfs.img`,
   `android-data`, `lost+found`).
-* Kamera nie działa (i celowo jest zablokowana).
-* Bluetooth: `bluebinder` się nie uruchamia (HAL Bluetooth w kontenerze pada).
-* Mało RAM-u — Firefox jest bardzo wolny.
+* The camera does not work (and is intentionally blocked).
+* Bluetooth: `bluebinder` does not start (the Bluetooth HAL in the container crashes).
+* Little RAM — Firefox is very slow.
 
-## Debugowanie
+## Debugging
 
-* Log kernela z poprzedniego startu: `/proc/last_kmsg` (Samsung, działa też w TWRP).
-* Wymuszony restart: przytrzymaj **Vol Dół + Power** ~10 s. TWRP: od razu potem
-  **Vol Góra + Home + Power**. (Wymuszony restart kończy się w logu
-  „kernel BUG … `sec_debug_hard_reset_hook`” — to normalne.)
-* Gdy start utknie w initramfs, Halium wystawia telnet na `192.168.2.15` przez USB.
-* Log kontenera: `lxc-start -n android -l DEBUG -o /tmp/lxc.log`.
-* Android w kontenerze: `lxc-attach -n android -- /system/bin/logcat -d`.
+* Kernel log of the previous boot: `/proc/last_kmsg` (Samsung, also works in TWRP).
+* Forced reboot: hold **Vol Down + Power** for ~10 s. TWRP: right after that,
+  hold **Vol Up + Home + Power**. (A forced reboot shows up in the log as
+  "kernel BUG … `sec_debug_hard_reset_hook`" — that is expected.)
+* If boot gets stuck in the initramfs, Halium exposes telnet on `192.168.2.15` over USB.
+* Container log: `lxc-start -n android -l DEBUG -o /tmp/lxc.log`.
+* Android inside the container: `lxc-attach -n android -- /system/bin/logcat -d`.
 
-## Źródła i podziękowania
+## Sources and credits
 
 * [Droidian porting guide](https://github.com/droidian/porting-guide)
-* [pmaports postmarketOS](https://gitlab.postmarketos.org/postmarketOS/pmaports) — `device-samsung-j5y17lte`, `linux-postmarketos-exynos7870`
-* [samsungexynos7870](https://github.com/samsungexynos7870) — kernel i drzewa urządzeń
-* [droidian-devices/common_fragments](https://github.com/droidian-devices/common_fragments) — fragmenty konfiguracji Halium/Droidian (gałąź 4.14)
+* [postmarketOS pmaports](https://gitlab.postmarketos.org/postmarketOS/pmaports) — `device-samsung-j5y17lte`, `linux-postmarketos-exynos7870`
+* [samsungexynos7870](https://github.com/samsungexynos7870) — kernel and device trees
+* [droidian-devices/common_fragments](https://github.com/droidian-devices/common_fragments) — Halium/Droidian config fragments (4.14 branch)
 
-## Licencja
+## License
 
-Łatki kernela — GPL-2.0 (jak kernel Linux). Pozostałe pliki (skrypty,
-konfiguracja) — MIT, chyba że w pliku zaznaczono inaczej.
+Kernel patches — GPL-2.0 (like the Linux kernel). Everything else (scripts,
+configuration) — MIT, unless stated otherwise in the file.

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install Pi-hole on the phone, wire it to the Wi-Fi hotspot and add the
-# Phosh "Pi-hole (wł./wył.)" toggle.
+# Phosh "Pi-hole" on/off launcher.
 #
 # Usage: scripts/setup-pihole.sh root@<phone-ip> [ssh options...]
 #

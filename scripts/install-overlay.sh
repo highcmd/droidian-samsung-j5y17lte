@@ -4,7 +4,7 @@
 # Usage: scripts/install-overlay.sh root@<phone-ip> [ssh options...]
 #   e.g. scripts/install-overlay.sh root@10.15.19.82 -i ~/.ssh/j5droidian_ed25519
 #
-# Needs root SSH access on the phone (see README, "Pierwszy dostęp").
+# Needs root SSH access on the phone (see README, "First access").
 set -euo pipefail
 
 TARGET="${1:?usage: $0 root@<phone-ip> [ssh options]}"
