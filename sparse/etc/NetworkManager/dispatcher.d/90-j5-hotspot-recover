@@ -1,0 +1,11 @@
+#!/bin/sh
+# NetworkManager dispatcher (Samsung J5 2017, bcmdhd): after an access point is
+# torn down the driver stays busy (scan EBUSY) and the next AP start fails.
+# Power-cycle the Wi-Fi radio so the firmware is reloaded.
+IFACE="$1"; ACTION="$2"
+[ "$IFACE" = "wlan0" ] || exit 0
+[ "$ACTION" = "down" ] || exit 0
+MODE=$(nmcli -g 802-11-wireless.mode connection show "$CONNECTION_UUID" 2>/dev/null)
+[ "$MODE" = "ap" ] || exit 0
+( sleep 1; nmcli radio wifi off; sleep 3; nmcli radio wifi on ) >/dev/null 2>&1 &
+exit 0

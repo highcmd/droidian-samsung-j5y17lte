@@ -1,0 +1,72 @@
+From 3530891e25c9eab90ce64d2165525aefabd6b82a Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 21:23:34 +0100
+Subject: [PATCH 9/9] fimc-is: fix NULL deref in isp/vra VIDIOC_QUERYCAP;
+ untrack debian build artifacts
+
+---
+ debian/.gitignore                                      | 10 ++++++++++
+ .../media/platform/exynos/fimc-is2/fimc-is-video-isp.c |  8 ++++----
+ .../media/platform/exynos/fimc-is2/fimc-is-video-vra.c |  8 ++++----
+ 3 files changed, 18 insertions(+), 8 deletions(-)
+ create mode 100644 debian/.gitignore
+
+diff --git a/debian/.gitignore b/debian/.gitignore
+new file mode 100644
+index 00000000..3c2b1614
+--- /dev/null
++++ b/debian/.gitignore
+@@ -0,0 +1,10 @@
++*
++!.gitignore
++!rules
++!kernel-info.mk
++!source/
++!source/format
++!initramfs-overlay/
++!initramfs-overlay/**
++!path-override/
++!path-override/**
+diff --git a/drivers/media/platform/exynos/fimc-is2/fimc-is-video-isp.c b/drivers/media/platform/exynos/fimc-is2/fimc-is-video-isp.c
+index c33d2463..f8379315 100644
+--- a/drivers/media/platform/exynos/fimc-is2/fimc-is-video-isp.c
++++ b/drivers/media/platform/exynos/fimc-is2/fimc-is-video-isp.c
+@@ -251,11 +251,11 @@ const struct v4l2_file_operations fimc_is_ixs_video_fops = {
+ static int fimc_is_ixs_video_querycap(struct file *file, void *fh,
+ 					struct v4l2_capability *cap)
+ {
+-	struct fimc_is_core *isp = video_drvdata(file);
++	/* Droidian: drvdata is a struct fimc_is_video, not fimc_is_core;
++	 * dereferencing ->pdev crashed on VIDIOC_QUERYCAP (gst-plugin-scanner). */
++	strlcpy(cap->driver, "exynos-fimc-is", sizeof(cap->driver));
+ 
+-	strncpy(cap->driver, isp->pdev->name, sizeof(cap->driver) - 1);
+-
+-	strncpy(cap->card, isp->pdev->name, sizeof(cap->card) - 1);
++	strlcpy(cap->card, "exynos-fimc-is", sizeof(cap->card));
+ 	cap->capabilities |= V4L2_CAP_STREAMING
+ 				| V4L2_CAP_VIDEO_OUTPUT
+ 				| V4L2_CAP_VIDEO_OUTPUT_MPLANE;
+diff --git a/drivers/media/platform/exynos/fimc-is2/fimc-is-video-vra.c b/drivers/media/platform/exynos/fimc-is2/fimc-is-video-vra.c
+index fb79728d..7b489347 100644
+--- a/drivers/media/platform/exynos/fimc-is2/fimc-is-video-vra.c
++++ b/drivers/media/platform/exynos/fimc-is2/fimc-is-video-vra.c
+@@ -207,11 +207,11 @@ const struct v4l2_file_operations fimc_is_vra_video_fops = {
+ static int fimc_is_vra_video_querycap(struct file *file, void *fh,
+ 					struct v4l2_capability *cap)
+ {
+-	struct fimc_is_core *core = video_drvdata(file);
++	/* Droidian: drvdata is a struct fimc_is_video, not fimc_is_core;
++	 * dereferencing ->pdev crashed on VIDIOC_QUERYCAP (gst-plugin-scanner). */
++	strlcpy(cap->driver, "exynos-fimc-is", sizeof(cap->driver));
+ 
+-	strncpy(cap->driver, core->pdev->name, sizeof(cap->driver) - 1);
+-
+-	strncpy(cap->card, core->pdev->name, sizeof(cap->card) - 1);
++	strlcpy(cap->card, "exynos-fimc-is", sizeof(cap->card));
+ 	cap->capabilities |= V4L2_CAP_STREAMING
+ 				| V4L2_CAP_VIDEO_OUTPUT
+ 				| V4L2_CAP_VIDEO_OUTPUT_MPLANE;
+-- 
+2.47.3
+

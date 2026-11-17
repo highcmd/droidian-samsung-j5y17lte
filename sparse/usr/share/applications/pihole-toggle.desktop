@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Pi-hole
+Name[pl]=Pi-hole (wł./wył.)
+Comment=Toggle Pi-hole ad blocking for the hotspot
+Comment[pl]=Włącz lub wyłącz blokowanie reklam Pi-hole w hotspocie
+Exec=/usr/local/bin/pihole-toggle-ui
+Icon=security-high
+Terminal=false
+Categories=Network;
+X-Purism-FormFactor=Workstation;Mobile;

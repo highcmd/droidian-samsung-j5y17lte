@@ -1,0 +1,25 @@
+From 1de5197e7e3d10f0031671bc7285e3963e5b3726 Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 21:05:14 +0100
+Subject: [PATCH 8/9] j5y17lte: enable DEVPTS_MULTIPLE_INSTANCES for LXC,
+ BRIDGE for lxc-net
+
+---
+ droidian/j5y17lte.config | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/droidian/j5y17lte.config b/droidian/j5y17lte.config
+index e9fe6978..0761fb54 100644
+--- a/droidian/j5y17lte.config
++++ b/droidian/j5y17lte.config
+@@ -35,3 +35,7 @@ CONFIG_UHID=y
+ CONFIG_INPUT_UINPUT=y
+ CONFIG_CMDLINE="androidboot.selinux=permissive console=tty0 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 log_buf_len=4M"
+ CONFIG_CMDLINE_EXTEND=y
++# LXC (Halium container) needs a private devpts instance on 3.x kernels
++CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
++# lxc-net bridge
++CONFIG_BRIDGE=y
+-- 
+2.47.3
+

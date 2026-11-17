@@ -1,0 +1,8 @@
+#!/bin/sh
+# Phosh launcher helper: toggle Pi-hole and show a notification.
+NEW=$(sudo -n /usr/local/sbin/j5-pihole-toggle toggle 2>/dev/null)
+case "$NEW" in
+  on)  notify-send -a Pi-hole -i security-high   "Pi-hole: WŁĄCZONY"  "Reklamy i trackery są blokowane w hotspocie." ;;
+  off) notify-send -a Pi-hole -i security-low    "Pi-hole: WYŁĄCZONY" "Blokowanie reklam w hotspocie jest wyłączone." ;;
+  *)   notify-send -a Pi-hole -i dialog-error    "Pi-hole: błąd" "Nie udało się przełączyć Pi-hole." ;;
+esac

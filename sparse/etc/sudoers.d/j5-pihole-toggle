@@ -1,0 +1,2 @@
+# Allow the phone user to toggle Pi-hole blocking without a password
+droidian ALL=(root) NOPASSWD: /usr/local/sbin/j5-pihole-toggle

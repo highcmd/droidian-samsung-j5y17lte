@@ -1,0 +1,12 @@
+[Unit]
+Description=J5 2017: keep all 8 CPU cores online (Exynos hotplug governor cannot re-online cores under zswap memory pressure)
+DefaultDependencies=no
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo 0 > /sys/power/cpuhotplug/governor/enabled; echo 8 > /sys/power/cpuhotplug/min_online_cpu; for c in 1 2 3 4 5 6 7; do echo 1 > /sys/devices/system/cpu/cpu$$c/online; done; true"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,14 @@
+# Pi-hole v6 preset for Samsung J5 2017 / Droidian hotspot
+[dns]
+  upstreams = ["9.9.9.9", "149.112.112.112", "1.1.1.1", "1.0.0.1"]
+  # NetworkManager's hotspot dnsmasq owns port 53 on the hotspot interface and
+  # forwards to Pi-hole here.
+  port = 5335
+  listeningMode = "LOCAL"
+  queryLogging = true
+
+[dhcp]
+  active = false
+
+[webserver]
+  port = "8080o,[::]:8080o"

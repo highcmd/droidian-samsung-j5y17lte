@@ -1,0 +1,12 @@
+[Unit]
+Description=J5 2017: USB RNDIS network (10.15.19.82) for SSH over USB
+After=local-fs.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/j5-usbnet.sh
+
+[Install]
+WantedBy=sysinit.target

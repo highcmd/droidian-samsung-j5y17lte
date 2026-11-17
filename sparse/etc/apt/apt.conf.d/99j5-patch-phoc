@@ -1,0 +1,2 @@
+// Samsung J5 2017: re-apply phoc built-in display patch after package upgrades
+DPkg::Post-Invoke { "/usr/local/sbin/j5-patch-phoc || true"; };

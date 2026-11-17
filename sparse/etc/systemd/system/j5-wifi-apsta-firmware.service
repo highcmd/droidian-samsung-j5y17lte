@@ -1,0 +1,16 @@
+[Unit]
+Description=J5 2017: use Broadcom AP+STA (SoftAP) Wi-Fi firmware so the hotspot works
+# The initramfs brings wlan0 up with the STA-only firmware; bcmdhd downloads the
+# firmware again on the next interface up, so set the path and take wlan0 down
+# before NetworkManager starts using it. (The driver appends "_blob" itself.)
+Before=NetworkManager.service wpa_supplicant.service
+After=local-fs.target android-mount.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'echo -n /vendor/etc/wifi/bcmdhd_apsta.bin > /sys/module/dhd/parameters/firmware_path; ip link set wlan0 down 2>/dev/null; true'
+
+[Install]
+WantedBy=sysinit.target

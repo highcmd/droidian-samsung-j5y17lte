@@ -1,0 +1,55 @@
+From fd87e8cd35a18c2000c4c70b36f5fea1ca7b3a18 Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 19:26:49 +0100
+Subject: [PATCH 4/9] j5y17lte: build dt.img, shrink initramfs, fix
+ merge_config perms
+
+---
+ debian/rules                    | 27 +++++++++++++++++++++++++++
+ scripts/kconfig/merge_config.sh |  0
+ 2 files changed, 27 insertions(+)
+ mode change 100644 => 100755 scripts/kconfig/merge_config.sh
+
+diff --git a/debian/rules b/debian/rules
+index 224ef2f3..220f633d 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -2,5 +2,32 @@
+ 
+ include /usr/share/linux-packaging-snippets/kernel-snippet.mk
+ 
++# --- j5y17lte specifics -------------------------------------------------
++# 1) Samsung Exynos boot images carry a separate DTBH dt.img (dtbtool_exynos).
++#    The generic snippet only runs "make dtbs", which builds nothing here.
++out/dtbimg-stamp: out/dtb-stamp
++	$(BUILD_COMMAND) dtb.img
++	test -s $(KERNEL_PREBUILT_DT)
++	touch $@
++
++out/KERNEL_OBJ/target-dtb.default: out/dtbimg-stamp
++
++# 2) BOOT partition is only 32 MiB and the kernel Image alone is ~19 MiB.
++#    Shrink the halium initramfs: drop udev hwdb (not needed for early boot)
++#    and compress with LZMA (CONFIG_RD_LZMA=y). Kernel detects by magic.
++out/KERNEL_OBJ/initramfs.gz:
++	set -e; tmpdir=$$(mktemp -d); cd "$${tmpdir}"; \
++	gunzip -c /usr/lib/$(DEB_HOST_MULTIARCH)/halium-generic-initramfs/initrd.img-halium-generic | cpio -i; \
++	if [ -e "$(CURDIR)/debian/initramfs-overlay" ]; then cp -Rv $(CURDIR)/debian/initramfs-overlay/* .; fi; \
++	find ./usr/lib/udev/hwdb.d -type f -delete; \
++	find . | cpio -o -R 0:0 -H newc | xz --format=lzma -9 > $(CURDIR)/$@
++
++# 3) Refuse to produce an image that does not fit the BOOT partition.
++out/bootsize-check: out/KERNEL_OBJ/boot.img
++	test $$(stat -c %s out/KERNEL_OBJ/boot.img) -le 33554432
++	touch $@
++
++kernel_snippet_install: out/bootsize-check
++
+ %:
+ 	dh $@
+diff --git a/scripts/kconfig/merge_config.sh b/scripts/kconfig/merge_config.sh
+old mode 100644
+new mode 100755
+-- 
+2.47.3
+

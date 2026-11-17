@@ -1,0 +1,250 @@
+From 76424f7d8ac342bfdc0437974d4b188c863f2395 Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 19:15:35 +0100
+Subject: [PATCH 1/9] Add Droidian packaging for j5y17lte
+
+---
+ debian/kernel-info.mk                     | 61 +++++++++++++++++++++++
+ debian/path-override/python               |  1 +
+ debian/rules                              |  6 +++
+ debian/source/format                      |  1 +
+ droidian/common_fragments/droidian.config | 29 +++++++++++
+ droidian/common_fragments/halium.config   | 49 ++++++++++++++++++
+ droidian/j5y17lte.config                  | 35 +++++++++++++
+ 7 files changed, 182 insertions(+)
+ create mode 100644 debian/kernel-info.mk
+ create mode 120000 debian/path-override/python
+ create mode 100755 debian/rules
+ create mode 100644 debian/source/format
+ create mode 100644 droidian/common_fragments/droidian.config
+ create mode 100644 droidian/common_fragments/halium.config
+ create mode 100644 droidian/j5y17lte.config
+
+diff --git a/debian/kernel-info.mk b/debian/kernel-info.mk
+new file mode 100644
+index 00000000..cd060127
+--- /dev/null
++++ b/debian/kernel-info.mk
+@@ -0,0 +1,61 @@
++########################################################################
++# Samsung Galaxy J5 (2017) - SM-J530F - Exynos 7870
++########################################################################
++VARIANT = android
++KERNEL_BASE_VERSION = 3.18.140
++# Exynos 3.18 + systemd >= 256 needs cgroup v1 forced
++KERNEL_BOOTIMAGE_CMDLINE = console=tty0 droidian.lvm.prefer systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 systemd.journald.forward_to_kmsg=yes log_buf_len=4M
++
++DEVICE_VENDOR = samsung
++DEVICE_MODEL = j5y17lte
++DEVICE_FULL_NAME = Samsung Galaxy J5 (2017)
++
++KERNEL_CONFIG_USE_FRAGMENTS = 1
++KERNEL_CONFIG_USE_DIFFCONFIG = 0
++KERNEL_DEFCONFIG = exynos7870-j5y17lte_defconfig
++
++# DT is shipped as a separate Exynos dt.img (dtbtool_exynos), not appended
++KERNEL_IMAGE_WITH_DTB = 0
++KERNEL_IMAGE_WITH_DTB_OVERLAY = 0
++KERNEL_IMAGE_WITH_DTB_OVERLAY_IN_KERNEL = 0
++KERNEL_PREBUILT_DT = out/KERNEL_OBJ/arch/arm64/boot/dtb.img
++
++# Values from postmarketOS deviceinfo (samsung-j5y17lte)
++KERNEL_BOOTIMAGE_PAGE_SIZE = 2048
++KERNEL_BOOTIMAGE_BASE_OFFSET = 0x10000000
++KERNEL_BOOTIMAGE_KERNEL_OFFSET = 0x00008000
++KERNEL_BOOTIMAGE_INITRAMFS_OFFSET = 0x01000000
++KERNEL_BOOTIMAGE_SECONDIMAGE_OFFSET = 0x00f00000
++KERNEL_BOOTIMAGE_TAGS_OFFSET = 0x00000100
++KERNEL_BOOTIMAGE_DTB_OFFSET =
++KERNEL_BOOTIMAGE_VERSION = 0
++KERNEL_INITRAMFS_COMPRESSION = gz
++KERNEL_BOOTIMAGE_GENERATE_VENDOR_BOOT = 0
++
++DEVICE_VBMETA_REQUIRED = 0
++DEVICE_VBMETA_IS_SAMSUNG = 0
++
++FLASH_ENABLED = 1
++FLASH_IS_AONLY = 0
++FLASH_IS_LEGACY_DEVICE = 1
++FLASH_IS_EXYNOS = 1
++FLASH_USE_TELNET = 0
++FLASH_INFO_MANUFACTURER = samsung
++FLASH_INFO_MODEL = SM-J530F
++FLASH_INFO_CPU = Exynos7870
++FLASH_INFO_DEVICE_IDS = j5y17lte
++
++BUILD_CROSS = 1
++BUILD_TRIPLET = aarch64-linux-android-
++BUILD_CLANG_TRIPLET = aarch64-linux-gnu-
++BUILD_CC = aarch64-linux-android-gcc
++BUILD_LLVM = 0
++BUILD_SKIP_MODULES = 0
++CLANG_VERSION = 6.0-4691093
++CLANG_CUSTOM = 1
++BUILD_PATH = /usr/lib/llvm-android-6.0-4691093/bin
++DEB_TOOLCHAIN = linux-initramfs-halium-generic:arm64, binutils-aarch64-linux-gnu, gcc-4.9-aarch64-linux-android, g++-4.9-aarch64-linux-android, libgcc-4.9-dev-aarch64-linux-android-cross, device-tree-compiler, python3
++DEB_BUILD_ON = amd64
++DEB_BUILD_FOR = arm64
++KERNEL_ARCH = arm64
++KERNEL_BUILD_TARGET = Image
+diff --git a/debian/path-override/python b/debian/path-override/python
+new file mode 120000
+index 00000000..0d55d249
+--- /dev/null
++++ b/debian/path-override/python
+@@ -0,0 +1 @@
++/opt/android/prebuilts/python/2.7.5/bin/python
+\ No newline at end of file
+diff --git a/debian/rules b/debian/rules
+new file mode 100755
+index 00000000..224ef2f3
+--- /dev/null
++++ b/debian/rules
+@@ -0,0 +1,6 @@
++#!/usr/bin/make -f
++
++include /usr/share/linux-packaging-snippets/kernel-snippet.mk
++
++%:
++	dh $@
+diff --git a/debian/source/format b/debian/source/format
+new file mode 100644
+index 00000000..89ae9db8
+--- /dev/null
++++ b/debian/source/format
+@@ -0,0 +1 @@
++3.0 (native)
+diff --git a/droidian/common_fragments/droidian.config b/droidian/common_fragments/droidian.config
+new file mode 100644
+index 00000000..d14e2271
+--- /dev/null
++++ b/droidian/common_fragments/droidian.config
+@@ -0,0 +1,29 @@
++# Droidian requirements
++CONFIG_ANDROID_PARANOID_NETWORK=n
++CONFIG_USER_NS=y
++CONFIG_ANDROID_BINDERFS=n
++# CONFIG_ANDROID_BINDER_DEVICES is defined below in the Waydroid section
++
++# Waydroid
++CONFIG_SW_SYNC_USER=y
++CONFIG_NET_CLS_CGROUP=y
++CONFIG_CGROUP_NET_CLASSID=y
++CONFIG_VETH=y
++CONFIG_NETFILTER_XT_TARGET_CHECKSUM=y
++CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder,anbox-binder,anbox-hwbinder,anbox-vndbinder"
++
++# RNDIS usb networking
++CONFIG_USB_CONFIGFS_RNDIS=y
++CONFIG_USB_CONFIGFS_RMNET_BAM=y
++CONFIG_USB_CONFIGFS_MASS_STORAGE=y
++
++# Bluetooth
++CONFIG_BT_HCIVHCI=y
++CONFIG_BT_HIDP=y
++CONFIG_BT_RFCOMM=y
++
++# Crypto
++CONFIG_CRYPTO_USER_API_SKCIPHER=y
++
++# Security
++CONFIG_SECURITY_YAMA=y
+diff --git a/droidian/common_fragments/halium.config b/droidian/common_fragments/halium.config
+new file mode 100644
+index 00000000..cca72033
+--- /dev/null
++++ b/droidian/common_fragments/halium.config
+@@ -0,0 +1,49 @@
++# Halium modifications
++
++# Halium errors
++CONFIG_VT=y
++CONFIG_IP_NF_MATCH_RPFILTER=y
++CONFIG_EPOLL=y
++CONFIG_PROC_FS=y
++CONFIG_DUMMY=n
++CONFIG_INOTIFY_USER=y
++CONFIG_RD_GZIP=y
++CONFIG_TIMERFD=y
++CONFIG_DEVTMPFS_MOUNT=y
++CONFIG_SIGNALFD=y
++CONFIG_QUOTACTL=y
++CONFIG_SYSVIPC=y
++CONFIG_DEVTMPFS=y
++CONFIG_FHANDLE=y
++CONFIG_NLS_UTF8=y
++CONFIG_SYSFS=y
++CONFIG_NETFILTER_XT_MATCH_MULTIPORT=y
++CONFIG_COMPAT_VDSO=n
++CONFIG_SECURITY_SELINUX_BOOTPARAM=y
++
++# Halium warnings
++CONFIG_WATCHDOG_NOWAYOUT=n
++CONFIG_NET_NS=y
++CONFIG_NET_CLS_CGROUP=y
++CONFIG_PID_NS=y
++CONFIG_UDF_FS=y
++CONFIG_NETFILTER_XT_MATCH_SCTP=y
++CONFIG_NETFILTER_XT_CONNMARK=y
++CONFIG_NETFILTER_XT_MATCH_RECENT=y
++CONFIG_NETFILTER_XT_MATCH_ESP=y
++CONFIG_NETFILTER_XT_MATCH_DCCP=y
++CONFIG_NETFILTER_XT_MATCH_NFACCT=y
++CONFIG_UTS_NS=y
++CONFIG_TMPFS_XATTR=y
++CONFIG_BLK_CGROUP=y
++CONFIG_FANOTIFY=y
++CONFIG_CGROUP_PERF=y
++CONFIG_CPUSETS=y
++CONFIG_LBDAF=y
++CONFIG_CGROUP_DEVICE=y
++CONFIG_IPC_NS=y
++CONFIG_NETPRIO_CGROUP=y
++CONFIG_MEMCG_KMEM=y
++CONFIG_RTC_DRV_CMOS=y
++CONFIG_CGROUP_SCHEDTUNE=n
++CONFIG_SCHED_TUNE=n
+diff --git a/droidian/j5y17lte.config b/droidian/j5y17lte.config
+new file mode 100644
+index 00000000..03a621a7
+--- /dev/null
++++ b/droidian/j5y17lte.config
+@@ -0,0 +1,35 @@
++# Samsung Galaxy J5 (2017) - Droidian specific
++CONFIG_LOCALVERSION=""
++CONFIG_AUTOFS4_FS=y
++CONFIG_SECURITY_SELINUX_DEVELOP=y
++CONFIG_SECURITY_SELINUX_BOOTPARAM=y
++CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
++CONFIG_DEFAULT_SECURITY_SELINUX=y
++CONFIG_AUDIT=y
++CONFIG_TMPFS_POSIX_ACL=y
++CONFIG_TMPFS_XATTR=y
++CONFIG_SECCOMP_FILTER=y
++CONFIG_SCHEDSTATS=y
++CONFIG_SCHED_DEBUG=y
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_VT_CONSOLE=y
++CONFIG_FRAMEBUFFER_CONSOLE=n
++CONFIG_SQUASHFS=y
++CONFIG_OVERLAY_FS=y
++CONFIG_BLK_DEV_DM=y
++CONFIG_DM_SNAPSHOT=y
++CONFIG_BLK_DEV_LOOP=y
++CONFIG_BPF_SYSCALL=y
++CONFIG_CGROUP_BPF=y
++CONFIG_CGROUP_FREEZER=y
++CONFIG_CGROUP_SCHED=y
++CONFIG_FAIR_GROUP_SCHED=y
++CONFIG_IPV6=y
++CONFIG_INOTIFY_USER=y
++CONFIG_ANDROID_BINDER_IPC=y
++CONFIG_USB_ACM=y
++CONFIG_USB_NET_RNDIS_WLAN=n
++CONFIG_TUN=y
++CONFIG_UHID=y
++CONFIG_INPUT_UINPUT=y
+-- 
+2.47.3
+

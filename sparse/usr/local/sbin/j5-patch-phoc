@@ -1,0 +1,17 @@
+#!/bin/sh
+# Samsung J5 2017 (Exynos 7870): the HWC1 (via HWC2On1Adapter) numbers the
+# primary display 1, so the wlroots hwcomposer backend names it HWCOMPOSER-2.
+# Droidian's phoc only treats "HWCOMPOSER-1" as the built-in panel, so touch
+# is not mapped to the panel and does not follow rotation.
+# Patch the (same-length) string in the phoc binary. Idempotent; re-run by an
+# APT hook after phoc upgrades.
+set -e
+BIN=/usr/bin/phoc
+[ -f "$BIN" ] || exit 0
+n=$(grep -a -o -c "HWCOMPOSER-1" "$BIN" || true)
+[ "$n" = "1" ] || exit 0
+TMP="$BIN.j5tmp"
+sed 's/HWCOMPOSER-1/HWCOMPOSER-2/' "$BIN" > "$TMP"
+chmod --reference="$BIN" "$TMP"
+mv -f "$TMP" "$BIN"
+echo "j5-patch-phoc: patched $BIN (HWCOMPOSER-1 -> HWCOMPOSER-2)"

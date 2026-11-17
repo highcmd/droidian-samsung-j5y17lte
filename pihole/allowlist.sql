@@ -1,0 +1,1 @@
+INSERT OR IGNORE INTO adlist (address, enabled, comment, type) VALUES ('https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt', 1, 'anudeepND: domains needed by popular services', 1);

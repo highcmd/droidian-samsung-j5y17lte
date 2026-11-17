@@ -1,0 +1,9 @@
+# Samsung Exynos: partition names are upper-case; Halium/Droidian look for lower-case ones
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="BOOT", SYMLINK+="disk/by-partlabel/boot"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="RECOVERY", SYMLINK+="disk/by-partlabel/recovery"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="SYSTEM", SYMLINK+="disk/by-partlabel/system"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="VENDOR", SYMLINK+="disk/by-partlabel/vendor"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="USERDATA", SYMLINK+="disk/by-partlabel/userdata"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="CACHE", SYMLINK+="disk/by-partlabel/cache"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="EFS", SYMLINK+="disk/by-partlabel/efs"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_NAME}=="PERSISTENT", SYMLINK+="disk/by-partlabel/persistent"

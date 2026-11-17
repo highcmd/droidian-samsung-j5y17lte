@@ -1,0 +1,4 @@
+# Samsung J5 2017: probing the FIMC-IS camera V4L2 nodes from Linux userspace
+# (GStreamer plugin scanner, Firefox gfxtest, ...) triggers a kernel panic in the
+# Exynos sysmmu code. Keep them root-only and do not grant session ACLs (uaccess).
+SUBSYSTEM=="video4linux", TAG-="uaccess", TAG-="seat", MODE="0600", OWNER="root", GROUP="root"

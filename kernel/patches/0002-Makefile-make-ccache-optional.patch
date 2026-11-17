@@ -1,0 +1,25 @@
+From 0ccdf1b918c4a2a1498df66b8dde878b7ceadff1 Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 19:19:11 +0100
+Subject: [PATCH 2/9] Makefile: make ccache optional
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 4f415a9a..01639a99 100644
+--- a/Makefile
++++ b/Makefile
+@@ -214,7 +214,7 @@ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
+ 
+ export srctree objtree VPATH
+ 
+-CCACHE := ccache
++CCACHE := $(shell command -v ccache 2>/dev/null)
+ 
+ # SUBARCH tells the usermode build what the underlying arch is.  That is set
+ # first, and if a usermode build is happening, the "ARCH=um" on the command
+-- 
+2.47.3
+

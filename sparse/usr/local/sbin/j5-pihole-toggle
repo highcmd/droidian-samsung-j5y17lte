@@ -1,0 +1,12 @@
+#!/bin/sh
+# Toggle Pi-hole blocking (Samsung J5 2017 / Droidian). Run as root via sudo.
+# Usage: j5-pihole-toggle [on|off|status|toggle]
+state() { pihole status 2>/dev/null | grep -q "blocking is enabled" && echo on || echo off; }
+case "${1:-toggle}" in
+  on)     pihole enable  >/dev/null 2>&1 ;;
+  off)    pihole disable >/dev/null 2>&1 ;;
+  status) ;;
+  toggle) [ "$(state)" = on ] && pihole disable >/dev/null 2>&1 || pihole enable >/dev/null 2>&1 ;;
+  *) echo "usage: $0 [on|off|status|toggle]" >&2; exit 2 ;;
+esac
+state

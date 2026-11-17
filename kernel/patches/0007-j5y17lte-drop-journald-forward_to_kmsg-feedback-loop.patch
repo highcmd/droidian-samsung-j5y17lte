@@ -1,0 +1,38 @@
+From 2d0b0f6ca96902bb5ee13afe3c0ebc5708714628 Mon Sep 17 00:00:00 2001
+From: highcmd <9810278+highcmd@users.noreply.github.com>
+Date: Tue, 17 Nov 2026 20:22:19 +0100
+Subject: [PATCH 7/9] j5y17lte: drop journald forward_to_kmsg (feedback loop
+ with Samsung kmsg prefix)
+
+---
+ debian/kernel-info.mk    | 2 +-
+ droidian/j5y17lte.config | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/debian/kernel-info.mk b/debian/kernel-info.mk
+index b33ccf92..370fba49 100644
+--- a/debian/kernel-info.mk
++++ b/debian/kernel-info.mk
+@@ -5,7 +5,7 @@ VARIANT = android
+ KERNEL_BASE_VERSION = 3.18.140
+ # Exynos 3.18 + systemd >= 256 needs cgroup v1 forced
+ # NOTE: S-boot ignores this; the effective cmdline is CONFIG_CMDLINE (droidian/j5y17lte.config)
+-KERNEL_BOOTIMAGE_CMDLINE = androidboot.selinux=permissive console=tty0 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 systemd.journald.forward_to_kmsg=yes log_buf_len=4M
++KERNEL_BOOTIMAGE_CMDLINE = androidboot.selinux=permissive console=tty0 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 log_buf_len=4M
+ 
+ DEVICE_VENDOR = samsung
+ DEVICE_MODEL = j5y17lte
+diff --git a/droidian/j5y17lte.config b/droidian/j5y17lte.config
+index eddccbb2..e9fe6978 100644
+--- a/droidian/j5y17lte.config
++++ b/droidian/j5y17lte.config
+@@ -33,5 +33,5 @@ CONFIG_USB_NET_RNDIS_WLAN=n
+ CONFIG_TUN=y
+ CONFIG_UHID=y
+ CONFIG_INPUT_UINPUT=y
+-CONFIG_CMDLINE="androidboot.selinux=permissive console=tty0 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 systemd.journald.forward_to_kmsg=yes log_buf_len=4M"
++CONFIG_CMDLINE="androidboot.selinux=permissive console=tty0 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1 log_buf_len=4M"
+ CONFIG_CMDLINE_EXTEND=y
+-- 
+2.47.3
+

@@ -1,0 +1,2 @@
+# Samsung J5 2017: sensors are exposed as evdev input devices and flood libinput/phoc
+SUBSYSTEM=="input", ATTRS{name}=="meta_event|accelerometer_sensor|gyro_sensor|SignificantMotionDetector|tilt_sensor|proximity_sensor|light_sensor|grip_sensor|magnetic_sensor", ENV{LIBINPUT_IGNORE_DEVICE}="1", ENV{ID_INPUT}="", ENV{ID_INPUT_KEY}=""
