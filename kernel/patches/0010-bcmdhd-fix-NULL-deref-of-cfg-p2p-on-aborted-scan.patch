@@ -1,0 +1,40 @@
+From 436f71e9bcd459904f4df202cfb0805ddc06176d Mon Sep 17 00:00:00 2001
+From: dev <dev@localhost>
+Date: Wed, 18 Nov 2026 19:12:42 +0100
+Subject: [PATCH] bcmdhd: fix NULL deref of cfg->p2p on aborted scan
+
+With the AP+STA firmware (bcmdhd_apsta.bin) P2P is not supported and
+cfg->p2p is never allocated. When the hotspot is started while
+wpa_supplicant is scanning, the firmware aborts the scan and both
+wl_escan_handler() and wl_notify_escan_complete() call p2p_scan(cfg)
+without checking cfg->p2p, causing a kernel panic (fault address 0x1)
+and a reboot.
+---
+ drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c b/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
+index d56672e7..72b944dc 100644
+--- a/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
++++ b/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
+@@ -17168,7 +17168,7 @@ static s32 wl_notify_escan_complete(struct bcm_cfg80211 *cfg,
+ #if defined(ESCAN_RESULT_PATCH)
+ 	if (likely(cfg->scan_request)) {
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+-		if (aborted && p2p_scan(cfg) &&
++		if (aborted && cfg->p2p && p2p_scan(cfg) &&
+ 			(cfg->scan_request->flags & NL80211_SCAN_FLAG_FLUSH)) {
+ 			WL_ERR(("scan list is changed"));
+ 			cfg->bss_list = wl_escan_get_buf(cfg, !aborted);
+@@ -17844,7 +17844,7 @@ static s32 wl_escan_handler(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
+ 			WL_INFORM_MEM(("ESCAN ABORTED\n"));
+ 
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
+-			if (p2p_scan(cfg) && cfg->scan_request &&
++			if (cfg->p2p && p2p_scan(cfg) && cfg->scan_request &&
+ 				(cfg->scan_request->flags & NL80211_SCAN_FLAG_FLUSH)) {
+ 				WL_ERR(("scan list is changed"));
+ 				cfg->bss_list = wl_escan_get_buf(cfg, FALSE);
+-- 
+2.47.3
+

@@ -222,6 +222,12 @@ nmcli con up <uuid>
   next start fails. The `90-j5-hotspot-recover` dispatcher script power-cycles
   the radio. **After turning the hotspot off, wait about 30–40 s before turning
   it on again.**
+* **Kernel panic when the hotspot is started during a Wi-Fi scan.** With the
+  AP+STA firmware P2P is unsupported and `cfg->p2p` stays NULL; the "scan
+  aborted" event that follows the switch to AP mode dereferenced it in
+  `wl_escan_handler()` / `wl_notify_escan_complete()` and the phone rebooted.
+  Fixed by `0010-bcmdhd-fix-NULL-deref-of-cfg-p2p-on-aborted-scan.patch`.
+  The previous boot's kernel log is in `/proc/last_kmsg`.
 
 ### Pi-hole
 
