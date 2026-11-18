@@ -22,7 +22,7 @@ device-specific fixes, helper scripts, and a Wi-Fi hotspot setup with Pi-hole.
 | Mobile data (LTE) | ✅ | see "Mobile data" |
 | Wi-Fi (client) | ✅ | |
 | Wi-Fi hotspot | ✅ | SoftAP firmware, 2.4 GHz channel 6 |
-| Pi-hole for the hotspot | ✅ | toggle in the app grid |
+| Pi-hole for the hotspot | ✅ | tile in the quick settings + launcher in the app grid |
 | microSD card / SMB NAS | ✅ | SDR104; ext4 without features 3.18 lacks |
 | SSH (USB and Wi-Fi) | ✅ | key-only |
 | All 8 CPU cores | ✅ | hotplug governor disabled |
@@ -53,6 +53,7 @@ tags `0x100`, header v0, separate `dt.img` in the Exynos `DTBH` format.
 kernel/patches/     patches on top of the kernel base (Droidian packaging + fixes)
 sparse/             files overlaid on the Droidian rootfs (same layout as adaptation packages)
 pihole/             SQL statement adding the allowlist subscription
+phosh-plugin/       "Pi-hole" quick-settings tile for Phosh 0.49 (C, GTK 3)
 scripts/
   build-kernel.sh     clones the kernel, applies the patches, builds .debs and boot.img in Docker
   install-overlay.sh  installs sparse/ on a running phone over SSH
@@ -229,7 +230,8 @@ nmcli con up <uuid>
   with its own cache disabled so the toggle takes effect immediately). The
   phone's own DNS is **not** filtered.
 * Web UI: `http://10.42.0.1:8080/admin` (from a device on the hotspot).
-* Toggle: the **"Pi-hole"** launcher in the app grid, or
+* Toggle: the **"Pi-hole"** tile in the quick settings (pull down the top
+  bar), the **"Pi-hole"** launcher in the app grid, or
   `sudo j5-pihole-toggle on|off|status|toggle`.
 * Blocklists (`sparse/etc/pihole/adlists.list`, about 435k domains):
   * [StevenBlack hosts](https://github.com/StevenBlack/hosts)
@@ -259,6 +261,21 @@ nmcli con up <uuid>
 * The 2017 J5 slot rejected one card with `card never left busy state`
   (`error -110`) even with both rails powered; another card worked — try a
   different card first.
+
+### Pi-hole quick-settings tile
+
+* `phosh-plugin/` is a Phosh quick-setting plugin (`pihole-quick-setting`).
+  A tap runs `sudo -n j5-pihole-toggle toggle`; the tile reads
+  `/run/j5-pihole.state` (written by `j5-pihole-toggle`) and watches it, so
+  toggles from the launcher or the shell show up as well.
+* Plugins resolve symbols from the `phosh` binary, and not everything in
+  the headers is exported — `phosh_quick_setting_set_status_icon()` is
+  missing in 0.49 and makes Phosh exit with `symbol lookup error`, so the
+  plugin sets the `status-icon` property instead. Check with
+  `nm -D --undefined-only` against `nm -D /usr/libexec/phosh` before
+  installing a rebuilt plugin.
+* Enabled through `gsettings set sm.puri.phosh.plugins quick-settings`
+  (as user `droidian`); Phosh only scans plugins at start-up.
 
 ## Known issues
 

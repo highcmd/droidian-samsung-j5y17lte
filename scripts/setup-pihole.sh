@@ -17,6 +17,12 @@ INSTALLER_URL="https://raw.githubusercontent.com/pi-hole/pi-hole/master/automate
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 curl -fsSL -o "$tmp/basic-install.sh" "$INSTALLER_URL"
+# Phosh quick-settings tile (phosh-plugin/), built for arm64 in Docker
+PLUGIN="$REPO_DIR/phosh-plugin/libphosh-plugin-pihole-quick-setting.so"
+[ -f "$PLUGIN" ] || docker run --rm --platform linux/arm64 -v "$REPO_DIR/phosh-plugin:/src" -w /src \
+    debian:trixie bash -c "apt-get update -qq && apt-get install -y -qq --no-install-recommends \
+    gcc libc6-dev make pkg-config libgtk-3-dev >/dev/null && make && chown $(id -u):$(id -g) *.so"
+
 echo "Pi-hole installer sha256: $(sha256sum "$tmp/basic-install.sh" | cut -d' ' -f1)"
 
 ssh "$@" "$TARGET" 'mkdir -p /etc/pihole /etc/NetworkManager/dnsmasq-shared.d'
@@ -27,6 +33,8 @@ tar -C "$S" -cf - ./etc/pihole/pihole.toml ./etc/pihole/adlists.list \
     ./usr/share/applications/pihole-toggle.desktop \
     | ssh "$@" "$TARGET" 'tar -C / --no-same-owner -xf -'
 scp -q "$@" "$tmp/basic-install.sh" "$TARGET:/root/pihole-basic-install.sh"
+PLUGINS_DIR=/usr/lib/aarch64-linux-gnu/phosh/plugins
+scp -q "$@" "$PLUGIN" "$REPO_DIR/phosh-plugin/pihole-quick-setting.plugin" "$TARGET:$PLUGINS_DIR/"
 scp -q "$@" "$REPO_DIR/pihole/allowlist.sql" "$TARGET:/root/pihole-allowlist.sql"
 
 ssh "$@" "$TARGET" 'set -e
@@ -41,4 +49,13 @@ pihole -g
 chmod 440 /etc/sudoers.d/j5-pihole-toggle
 visudo -cf /etc/sudoers.d/j5-pihole-toggle
 update-desktop-database /usr/share/applications || true
+/usr/lib/aarch64-linux-gnu/glib-2.0/gio-querymodules /usr/lib/aarch64-linux-gnu/phosh/plugins
+/usr/local/sbin/j5-pihole-toggle status >/dev/null
+# add the tile to the top-bar quick settings (takes effect after Phosh restarts)
+bus="unix:path=/run/user/$(id -u droidian)/bus"
+qs=$(sudo -u droidian DBUS_SESSION_BUS_ADDRESS="$bus" gsettings get sm.puri.phosh.plugins quick-settings)
+case "$qs" in *pihole-quick-setting*) ;; *)
+    qs=$(echo "$qs" | sed "s/^@as \\[\\]$/[]/; s/\\]$/, '"'"'pihole-quick-setting'"'"']/; s/\\[, /[/")
+    sudo -u droidian DBUS_SESSION_BUS_ADDRESS="$bus" gsettings set sm.puri.phosh.plugins quick-settings "$qs" ;;
+esac
 echo "Set the web UI password with: pihole setpassword"'

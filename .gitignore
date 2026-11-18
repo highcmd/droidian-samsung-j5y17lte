@@ -2,3 +2,4 @@ build/
 *.img
 *.zip
 *.deb
+*.so

@@ -1,0 +1,6 @@
+[Plugin]
+Id=pihole-quick-setting
+Name=Pi-hole Quick Setting
+Types=quick-setting;
+Comment=Turn Pi-hole ad blocking for the hotspot on and off
+Plugin=/usr/lib/aarch64-linux-gnu/phosh/plugins/libphosh-plugin-pihole-quick-setting.so
