@@ -1,0 +1,14 @@
+[Unit]
+Description=Block the NAS ports on mobile data (J5)
+Before=smbd.service nmbd.service wsdd-server.service
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/j5-nas-firewall start
+ExecStop=/usr/local/sbin/j5-nas-firewall stop
+
+[Install]
+WantedBy=multi-user.target

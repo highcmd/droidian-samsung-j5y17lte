@@ -15,6 +15,7 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 tar -C "$REPO_DIR/sparse" --exclude='./etc/pihole' \
     --exclude='./etc/NetworkManager/dnsmasq-shared.d' \
     --exclude='./etc/sudoers.d' --exclude='./etc/samba' \
+    --exclude='./usr/local/sbin/j5-nas-firewall' --exclude='./etc/systemd/system/j5-nas-firewall.service' \
     --exclude='./usr/local/sbin/j5-pihole-toggle' \
     --exclude='./usr/local/bin/pihole-toggle-ui' \
     --exclude='./usr/share/applications/pihole-toggle.desktop' \

@@ -255,9 +255,13 @@ nmcli con up <uuid>
 * Samba share **`nas`** (`sparse/etc/samba/smb.conf`): guests can read
   (VLC: *Local network* → *J5NAS*), user **`nas`** can write. Name discovery
   over NetBIOS (`nmbd`) and WS-Discovery (`wsdd-server`, Windows *Network*).
-* Access is limited with `hosts allow` to localhost, the hotspot
-  (`10.42.`), USB (`10.15.19.`) and `192.168.` LANs — never mobile data.
-* Address: `smb://10.42.0.1/nas` from the hotspot, `\\J5NAS\nas` on Windows.
+* `j5-nas-firewall.service` drops the SMB, NetBIOS and WS-Discovery ports
+  on the mobile-data interfaces (`rmnet*`, IPv4 and IPv6). Samba's
+  `hosts allow` is not used: Windows connects over IPv6 when it can, and
+  the home IPv6 prefix comes from the ISP and can change.
+* Address: `smb://10.42.0.1/nas` from the hotspot, `\\J5NAS\nas` on Windows
+  (`wsdd-server` announces the name `J5NAS`). Windows refuses guest access
+  by default, so log in as `nas` (`net use \\J5NAS\nas /user:nas`).
 * The 2017 J5 slot rejected one card with `card never left busy state`
   (`error -110`) even with both rails powered; another card worked — try a
   different card first.

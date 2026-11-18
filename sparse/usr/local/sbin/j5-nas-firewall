@@ -1,0 +1,14 @@
+#!/bin/sh
+# Keep the NAS (Samba, NetBIOS, WS-Discovery) off the mobile-data interfaces
+# (rmnet*). Wi-Fi, hotspot and USB stay open. Usage: j5-nas-firewall start|stop
+set -e
+for ipt in iptables ip6tables; do
+    $ipt -D INPUT -i rmnet+ -j J5-NAS 2>/dev/null || true
+    $ipt -F J5-NAS 2>/dev/null || true
+    $ipt -X J5-NAS 2>/dev/null || true
+    [ "${1:-start}" = stop ] && continue
+    $ipt -N J5-NAS
+    for p in 139 445 5357; do $ipt -A J5-NAS -p tcp --dport $p -j DROP; done
+    for p in 137 138 3702; do $ipt -A J5-NAS -p udp --dport $p -j DROP; done
+    $ipt -I INPUT -i rmnet+ -j J5-NAS
+done

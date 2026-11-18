@@ -16,6 +16,8 @@ FORMAT="${FORMAT:-1}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 scp -q "$@" "$REPO_DIR/sparse/etc/samba/smb.conf" "$TARGET:/root/j5-smb.conf"
+scp -q "$@" "$REPO_DIR/sparse/usr/local/sbin/j5-nas-firewall" "$TARGET:/usr/local/sbin/"
+scp -q "$@" "$REPO_DIR/sparse/etc/systemd/system/j5-nas-firewall.service" "$TARGET:/etc/systemd/system/"
 
 ssh "$@" "$TARGET" "FORMAT=$FORMAT bash -s" <<'REMOTE'
 set -euo pipefail
@@ -43,6 +45,11 @@ chown nas:nas /srv/nas && chmod 2775 /srv/nas
 [ -f /etc/samba/smb.conf.orig ] || cp /etc/samba/smb.conf /etc/samba/smb.conf.orig
 install -m 644 /root/j5-smb.conf /etc/samba/smb.conf && rm /root/j5-smb.conf
 testparm -s >/dev/null 2>&1
+chmod 755 /usr/local/sbin/j5-nas-firewall
+# Windows sees the WS-Discovery name, not the NetBIOS one
+sed -i 's/^WSDD_PARAMS=.*/WSDD_PARAMS="-n J5NAS"/' /etc/wsdd-server/defaults
+systemctl daemon-reload
+systemctl enable --now j5-nas-firewall
 systemctl enable smbd nmbd wsdd-server
 systemctl restart smbd nmbd wsdd-server
 REMOTE
