@@ -46,6 +46,10 @@ chown nas:nas /srv/nas && chmod 2775 /srv/nas
 install -m 644 /root/j5-smb.conf /etc/samba/smb.conf && rm /root/j5-smb.conf
 testparm -s >/dev/null 2>&1
 chmod 755 /usr/local/sbin/j5-nas-firewall
+# Windows resolves names over LLMNR (systemd-resolved answers with the
+# hostname), so the hostname has to match the announced name J5NAS
+hostnamectl set-hostname j5nas
+grep -qw j5nas /etc/hosts || echo "127.0.1.1 j5nas" >> /etc/hosts
 # Windows sees the WS-Discovery name, not the NetBIOS one
 sed -i 's/^WSDD_PARAMS=.*/WSDD_PARAMS="-n J5NAS"/' /etc/wsdd-server/defaults
 systemctl daemon-reload

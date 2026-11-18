@@ -260,7 +260,10 @@ nmcli con up <uuid>
   `hosts allow` is not used: Windows connects over IPv6 when it can, and
   the home IPv6 prefix comes from the ISP and can change.
 * Address: `smb://10.42.0.1/nas` from the hotspot, `\\J5NAS\nas` on Windows
-  (`wsdd-server` announces the name `J5NAS`). Windows refuses guest access
+  (`wsdd-server` announces the name `J5NAS`; the hostname is set to `j5nas`
+  because Windows resolves the name over LLMNR, answered by
+  `systemd-resolved` with the hostname — otherwise `net use` fails with
+  system error 53). Windows refuses guest access
   by default, so log in as `nas` (`net use \\J5NAS\nas /user:nas`).
 * The 2017 J5 slot rejected one card with `card never left busy state`
   (`error -110`) even with both rails powered; another card worked — try a
