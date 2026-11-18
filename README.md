@@ -307,5 +307,6 @@ nmcli con up <uuid>
 
 ## License
 
-Kernel patches — GPL-2.0 (like the Linux kernel). Everything else (scripts,
+Kernel patches — GPL-2.0 (like the Linux kernel). `phosh-plugin/` —
+GPL-3.0-or-later (it uses Phosh headers). Everything else (scripts,
 configuration) — MIT, unless stated otherwise in the file.

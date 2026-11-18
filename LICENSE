@@ -1,6 +1,10 @@
 Kernel patches in kernel/patches/ are licensed under the GNU General Public
 License version 2, the same as the Linux kernel they modify.
 
+The Phosh plugin in phosh-plugin/ (including the Phosh headers in
+phosh-plugin/include/) is licensed under the GNU General Public License
+version 3 or later, the same as Phosh.
+
 All other files in this repository are licensed under the MIT License:
 
 MIT License
