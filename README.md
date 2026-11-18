@@ -23,6 +23,7 @@ device-specific fixes, helper scripts, and a Wi-Fi hotspot setup with Pi-hole.
 | Wi-Fi (client) | ✅ | |
 | Wi-Fi hotspot | ✅ | SoftAP firmware, 2.4 GHz channel 6 |
 | Pi-hole for the hotspot | ✅ | toggle in the app grid |
+| microSD card / SMB NAS | ✅ | SDR104; ext4 without features 3.18 lacks |
 | SSH (USB and Wi-Fi) | ✅ | key-only |
 | All 8 CPU cores | ✅ | hotplug governor disabled |
 | Camera | ❌ | V4L2 nodes blocked — the FIMC-IS driver causes a kernel panic |
@@ -56,6 +57,7 @@ scripts/
   build-kernel.sh     clones the kernel, applies the patches, builds .debs and boot.img in Docker
   install-overlay.sh  installs sparse/ on a running phone over SSH
   setup-pihole.sh     installs Pi-hole and wires it to the hotspot
+  setup-nas.sh        formats the SD card and shares it over SMB
 ```
 
 ## Installing from scratch
@@ -155,6 +157,14 @@ scripts/setup-pihole.sh root@10.15.19.82 -i ~/.ssh/your_key
 ssh root@10.15.19.82 pihole setpassword
 ```
 
+### 8. SD card NAS (optional)
+
+**Erases the SD card.**
+
+```sh
+NAS_PASSWORD='choose-one' scripts/setup-nas.sh root@10.15.19.82 -i ~/.ssh/your_key
+```
+
 ## Problems found and how they were solved
 
 Listed roughly in the order they showed up during porting. This section is the
@@ -231,6 +241,24 @@ nmcli con up <uuid>
   (domains needed by popular services).
 * The Pi-hole installer disables the `systemd-resolved` stub on port 53 — not
   needed here (port 5335); `setup-pihole.sh` restores the stub.
+
+### SD card NAS
+
+* The card is formatted as ext4 and mounted on `/srv/nas` (`LABEL=nas`,
+  `nofail`). e2fsprogs 1.47 enables `metadata_csum`, `orphan_file` and `64bit`
+  by default; kernel 3.18 refuses to mount such a file system, so they are
+  turned off.
+* The bare `/srv/nas` directory is immutable (`chattr +i`), so nothing is
+  written to the rootfs when the card is missing.
+* Samba share **`nas`** (`sparse/etc/samba/smb.conf`): guests can read
+  (VLC: *Local network* → *J5NAS*), user **`nas`** can write. Name discovery
+  over NetBIOS (`nmbd`) and WS-Discovery (`wsdd-server`, Windows *Network*).
+* Access is limited with `hosts allow` to localhost, the hotspot
+  (`10.42.`), USB (`10.15.19.`) and `192.168.` LANs — never mobile data.
+* Address: `smb://10.42.0.1/nas` from the hotspot, `\\J5NAS\nas` on Windows.
+* The 2017 J5 slot rejected one card with `card never left busy state`
+  (`error -110`) even with both rails powered; another card worked — try a
+  different card first.
 
 ## Known issues
 

@@ -14,7 +14,7 @@ REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # Pi-hole files are installed by scripts/setup-pihole.sh, not here.
 tar -C "$REPO_DIR/sparse" --exclude='./etc/pihole' \
     --exclude='./etc/NetworkManager/dnsmasq-shared.d' \
-    --exclude='./etc/sudoers.d' \
+    --exclude='./etc/sudoers.d' --exclude='./etc/samba' \
     --exclude='./usr/local/sbin/j5-pihole-toggle' \
     --exclude='./usr/local/bin/pihole-toggle-ui' \
     --exclude='./usr/share/applications/pihole-toggle.desktop' \
