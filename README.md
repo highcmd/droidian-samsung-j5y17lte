@@ -273,8 +273,10 @@ nmcli con up <uuid>
   (`wsdd-server` announces the name `J5NAS`; the hostname is set to `j5nas`
   because Windows resolves the name over LLMNR, answered by
   `systemd-resolved` with the hostname — otherwise `net use` fails with
-  system error 53). Windows refuses guest access
-  by default, so log in as `nas` (`net use \\J5NAS\nas /user:nas`).
+  system error 53). Windows 11 refuses guest sessions, so Samba uses
+  `map to guest = Never`: an unknown Windows account gets a logon failure
+  and Explorer asks for credentials (`nas`) instead of failing; anonymous
+  clients such as VLC still get read-only guest access.
 * The 2017 J5 slot rejected one card with `card never left busy state`
   (`error -110`) even with both rails powered; another card worked — try a
   different card first.
