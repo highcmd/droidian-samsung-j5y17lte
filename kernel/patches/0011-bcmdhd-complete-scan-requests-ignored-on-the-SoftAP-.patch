@@ -1,0 +1,31 @@
+From c173ce879a67d541449838ac3cf80cf80ba3cfba Mon Sep 17 00:00:00 2001
+From: dev <dev@localhost>
+Date: Thu, 19 Nov 2026 16:56:14 +0100
+Subject: [PATCH] bcmdhd: complete scan requests ignored on the SoftAP
+ interface
+
+wl_cfg80211_scan returned 0 for scans on an AP interface without ever
+calling cfg80211_scan_done, so cfg80211 kept the request pending and
+every scan after the hotspot was turned off failed with -EBUSY.
+---
+ drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c b/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
+index 72b944dc..ad7b4b5b 100644
+--- a/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
++++ b/drivers/net/wireless/bcmdhd_100_10/wl_cfg80211.c
+@@ -3620,6 +3620,10 @@ __wl_cfg80211_scan(struct wiphy *wiphy, struct net_device *ndev,
+ 	 */
+ 	if (request && (scan_req_iftype(request) == NL80211_IFTYPE_AP)) {
+ 		WL_DBG(("Scan Command on SoftAP Interface. Ignoring...\n"));
++		/* Complete it right away, otherwise cfg80211 keeps it as the
++		 * pending scan forever and every later scan fails with -EBUSY.
++		 */
++		cfg80211_scan_done(request, false);
+ 		return 0;
+ 	}
+ 
+-- 
+2.47.3
+

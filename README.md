@@ -228,6 +228,10 @@ nmcli con up <uuid>
   `wl_escan_handler()` / `wl_notify_escan_complete()` and the phone rebooted.
   Fixed by `0010-bcmdhd-fix-NULL-deref-of-cfg-p2p-on-aborted-scan.patch`.
   The previous boot's kernel log is in `/proc/last_kmsg`.
+* **No Wi-Fi networks after turning the hotspot off.** wpa_supplicant scans on
+  the AP interface; the driver accepted that scan but never reported it done,
+  so every later scan failed with `-EBUSY` until reboot. Fixed by
+  `0011-bcmdhd-complete-scan-requests-ignored-on-the-SoftAP-.patch`.
 
 ### Pi-hole
 
