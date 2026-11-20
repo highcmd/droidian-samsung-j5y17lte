@@ -26,6 +26,7 @@ device-specific fixes, helper scripts, and a Wi-Fi hotspot setup with Pi-hole.
 | microSD card / SMB NAS | ✅ | SDR104; ext4 without features 3.18 lacks |
 | SSH (USB and Wi-Fi) | ✅ | key-only |
 | All 8 CPU cores | ✅ | hotplug governor disabled |
+| Eco mode | ✅ | quick-settings tile: CPU ≤ 1014 MHz, GPU ≤ 450 MHz, lazier governor |
 | Camera | ❌ | V4L2 nodes blocked — the FIMC-IS driver causes a kernel panic |
 | Media audio, SMS, Bluetooth, GPS, sensors | ❓ | not tested (bluebinder does not start) |
 | Web browser | ⚠️ | works, but 2 GB of RAM is little for Firefox |
@@ -53,12 +54,13 @@ tags `0x100`, header v0, separate `dt.img` in the Exynos `DTBH` format.
 kernel/patches/     patches on top of the kernel base (Droidian packaging + fixes)
 sparse/             files overlaid on the Droidian rootfs (same layout as adaptation packages)
 pihole/             SQL statement adding the allowlist subscription
-phosh-plugin/       "Pi-hole" quick-settings tile for Phosh 0.49 (C, GTK 3)
+phosh-plugin/       "Pi-hole" and "Eco" quick-settings tiles for Phosh 0.49 (C, GTK 3)
 scripts/
   build-kernel.sh     clones the kernel, applies the patches, builds .debs and boot.img in Docker
   install-overlay.sh  installs sparse/ on a running phone over SSH
   setup-pihole.sh     installs Pi-hole and wires it to the hotspot
   setup-nas.sh        formats the SD card and shares it over SMB
+  setup-eco.sh        installs eco mode and its quick-settings tile
 ```
 
 ## Installing from scratch
@@ -164,6 +166,12 @@ ssh root@10.15.19.82 pihole setpassword
 
 ```sh
 NAS_PASSWORD='choose-one' scripts/setup-nas.sh root@10.15.19.82 -i ~/.ssh/your_key
+```
+
+### 9. Eco mode tile (optional)
+
+```sh
+scripts/setup-eco.sh root@10.15.19.82 -i ~/.ssh/your_key
 ```
 
 ## Problems found and how they were solved
@@ -295,6 +303,19 @@ nmcli con up <uuid>
   installing a rebuilt plugin.
 * Enabled through `gsettings set sm.puri.phosh.plugins quick-settings`
   (as user `droidian`); Phosh only scans plugins at start-up.
+
+### Eco mode
+
+* `eco-quick-setting` (same code as the Pi-hole tile) runs
+  `sudo -n j5-eco toggle`. Eco on caps both CPU clusters at 1014 MHz
+  (stock 1586 MHz) and the Mali GPU at 450 MHz (`dvfs_max_lock`, stock
+  1001 MHz), and makes the `interactive` governor lazier (`hispeed_freq`
+  676 MHz, `go_hispeed_load` 99, `target_loads` 90, `timer_slack` 80 ms).
+  Eco off restores the governor values saved when eco was first switched on.
+* Cores are not taken offline: after the hotplug governor removed them,
+  zswap failed to bring them back (see above).
+* The choice is saved in `/var/lib/j5-eco/enabled` and re-applied at boot by
+  `j5-eco.service`.
 
 ## Known issues
 

@@ -1,0 +1,6 @@
+[Plugin]
+Id=eco-quick-setting
+Name=Eco Mode Quick Setting
+Types=quick-setting;
+Comment=Lower CPU and GPU clocks to save battery
+Plugin=/usr/lib/aarch64-linux-gnu/phosh/plugins/libphosh-plugin-eco-quick-setting.so

@@ -1,0 +1,2 @@
+# Allow the phone user to toggle eco mode without a password
+droidian ALL=(root) NOPASSWD: /usr/local/sbin/j5-eco

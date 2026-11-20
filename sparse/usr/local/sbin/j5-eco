@@ -1,0 +1,73 @@
+#!/bin/sh
+# Eco mode: cap CPU and GPU clocks and make the CPU governor lazier.
+# Usage: j5-eco on|off|toggle|status|restore
+# The choice is kept in /var/lib/j5-eco/enabled (restored at boot by
+# j5-eco.service); /run/j5-eco.state is read by the Phosh quick-settings tile.
+set -e
+CPU=/sys/devices/system/cpu
+GPU=/sys/devices/11400000.mali
+SAVED=/var/lib/j5-eco/enabled
+DEFAULTS=/run/j5-eco.defaults
+TUNABLES="go_hispeed_load hispeed_freq target_loads timer_slack above_hispeed_delay"
+
+ECO_CPU_MAX=1014000      # kHz, stock max 1586000
+ECO_GPU_MAX=450          # MHz, stock max 1001
+
+save_defaults() {
+    [ -f "$DEFAULTS" ] && return
+    for p in 0 4; do
+        for t in $TUNABLES; do
+            echo "$p $t $(cat $CPU/cpu$p/cpufreq/interactive/$t)"
+        done
+    done > "$DEFAULTS.tmp"
+    mv "$DEFAULTS.tmp" "$DEFAULTS"
+}
+
+eco_on() {
+    save_defaults
+    for p in 0 4; do
+        i=$CPU/cpu$p/cpufreq/interactive
+        echo 99 > $i/go_hispeed_load
+        echo 676000 > $i/hispeed_freq
+        echo 90 > $i/target_loads
+        echo 80000 > $i/timer_slack
+        echo 80000 > $i/above_hispeed_delay
+        echo $ECO_CPU_MAX > $CPU/cpu$p/cpufreq/scaling_max_freq
+    done
+    echo $ECO_GPU_MAX > $GPU/dvfs_max_lock
+}
+
+eco_off() {
+    for p in 0 4; do
+        cat $CPU/cpu$p/cpufreq/cpuinfo_max_freq > $CPU/cpu$p/cpufreq/scaling_max_freq
+    done
+    if [ -f "$DEFAULTS" ]; then
+        while read -r p t v; do
+            echo "$v" > $CPU/cpu$p/cpufreq/interactive/$t
+        done < "$DEFAULTS"
+    fi
+    echo 0 > $GPU/dvfs_max_lock
+}
+
+state() {
+    [ "$(cat $CPU/cpu0/cpufreq/scaling_max_freq)" -le $ECO_CPU_MAX ] && echo on || echo off
+}
+
+publish() {
+    s=$(state)
+    echo "$s" > /run/j5-eco.state.tmp && chmod 644 /run/j5-eco.state.tmp &&
+        mv /run/j5-eco.state.tmp /run/j5-eco.state
+    echo "$s"
+}
+
+remember() { mkdir -p "${SAVED%/*}"; echo "$1" > "$SAVED"; }
+
+case "${1:-toggle}" in
+    on) eco_on; remember on ;;
+    off) eco_off; remember off ;;
+    toggle) if [ "$(state)" = on ]; then eco_off; remember off; else eco_on; remember on; fi ;;
+    restore) [ "$(cat $SAVED 2>/dev/null)" = on ] && eco_on ;;
+    status) ;;
+    *) echo "usage: $0 on|off|toggle|status|restore" >&2; exit 2 ;;
+esac
+publish

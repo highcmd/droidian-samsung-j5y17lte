@@ -17,6 +17,7 @@ tar -C "$REPO_DIR/sparse" --exclude='./etc/pihole' \
     --exclude='./etc/sudoers.d' --exclude='./etc/samba' \
     --exclude='./usr/local/sbin/j5-nas-firewall' --exclude='./etc/systemd/system/j5-nas-firewall.service' \
     --exclude='./usr/local/sbin/j5-pihole-toggle' \
+    --exclude='./usr/local/sbin/j5-eco' --exclude='./etc/systemd/system/j5-eco.service' \
     --exclude='./usr/local/bin/pihole-toggle-ui' \
     --exclude='./usr/share/applications/pihole-toggle.desktop' \
     -cf - . | ssh "$@" "$TARGET" 'tar -C / --no-same-owner -xf -'

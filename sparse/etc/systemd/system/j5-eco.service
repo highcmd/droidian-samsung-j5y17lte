@@ -1,0 +1,11 @@
+[Unit]
+Description=Restore J5 eco mode (lower CPU/GPU clocks) if it was on
+After=j5-cpu-hotplug.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/j5-eco restore
+
+[Install]
+WantedBy=multi-user.target
